@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <!-- 
 
-
+contradictory accounts of an event flow across a group
 
 Examples
 + fake news (facebook - trump inaugurationne)
@@ -19,9 +19,83 @@ Examples
 + polarization 
 + racism
 
+echo chamber effect // complex contagion
+
 -->
 
-## contradictory accounts of an event flow across a group
+## Introduction
+
+<!-- Conspiracy theories have been a part of human societies at least since [first great example], yet the frenzy around fake news feels like a decidedly 21st century phenomena. Has some societal reorganization changed the types of stories that get told or the rates at which such stories get spread? In this project, we suggest that a move from the diffusion of information along small-world networks -- as would have been common in the pre-internet era -- to its spread along scale-free facebook, twitter and other social media networks has fundamentally altered the way in which contradictory accounts spread. We show that, under a wide range of conditions, increasing skepticism e.g. through critical thinking skills or education, is inadequate to prevent polarization. We then suggest an array of scenarios beyond fake news, such as political polarization or racism, in which the spread of fake news can be compounded by ideological sorting.
+-->
+
+## Model Parameters
+
+To examine dynamics in the flow of accounts about an event, we construct an agent-based model in NetLogo. We develop a model with $N$ agents and $k$ different accounts. We embed our agents within one of two possible networks, a small-world network <!-- add N agents and p probability of a tie --> and a scale-free network <!-- N agents and p probability of a tie -->. 
+<!-- directed or undirected? strongly connected e.g. path from every node to every other node -->
+
+<!-- in gossip networks, an account gets initiated at node i. in each period, each informed node informs its neighbors of the infromation with probability $p \in (0, 1]$.  
+
+
+Each agent $i$ believes some account at baseline ($t = 0$) and updates that belief in each time $t = \{1, 2, ..., T\}$ <!-- You could imagine a situation where some agents start out believing nothing, and the idea diffuses outwards from the first affected agents. Or from the russian trolls-->. In the case in which there are two accounts A1 and A2, for example, proportion $p_{A1}$ believe account A at baseline and proportion $1 - p_{A2}$ believe account B. 
+
+In the simplest variant of our model:
+
+> 1) $N$ = 100
+> 2) $p = ?$
+> 3) $k = 2$ <!-- could try 2, 3, 10 -->
+> 4) $T$ = 25
+> 5) $p_{A1} = p_{A2} = \frac{1}{k}$ <!-- could try inequitable distributions -->
+
+<!-- we tested the sensitivity of our model to different paraneters $k = \{2, 3, 5, 10\}$ with both equal and unequal beginning distributions of the events -->
+
+#### Agent Properties
+
+We endow each agent with two properties: skepticism and relevance. Skepticism is defined as the likelihood that an agent will update her beliefs given a new account of an event. In a very simple model, each agent has some level of skepticism $s$ drawn from a uniform distribution $U[0, 1]$. When she hears a new account, she updates her beliefs about the event with probability $1 - s$. <!-- in each period, the new account is just what the majority of other connected agents believe -->
+
+<!-- We could also imagine that an agent's skepticism is a property of the number of people from whom she hears about the event, or it could be weighted by the number of neighbors who hold a certain belief --> <!-- synchronous or asynchronous? -->
+<!-- or we could have plausibility, the likelihood that somebody will believe an account -->
+
+Relevance is a measure of how much the agent *cares* about the event. You can imagine a scenario where some communities care very strongly about an event, while others are relatively indifferent. An agent with high relevance will ask each of its neighbors for their accounts of the event in each period, while an agent with low relevance is less likely to ask about the event. Again, we draw relevance r from a uniform distribution $U[0,1]$. <!-- In a second variant, we consider the case in which relevance is a spatial property associated with colored patches in the model. -->
+
+#### Rules
+
+We consider two rules. 
+
+> 1) Updating: in each time period, an agent updates her beliefs based on the accounts she hears with probability 1 -s.
+<!-- this could decay as an agent hears more accounts. At the very least, it needs some memory -->
+> 2) Shuffling: in each time period, if an agent is surround by a majority of people who hold a different belief from her, she randomly forms a new connection to somebody with the same belief as her
+
+#### Outcomes
+
+We are interested in one of several outcomes. <!-- proportion of the agents with belief A versus B -->
+
+<!-- diffusion centrality: how extensively information spreads as a function of the initial node
+
+$H(g; p, t) := \sum_1^T$(pg)^t
+-->
+
+## Results
+
+The proportion of runs in which all agents held the same belief in the final period was <!-- what? --> 
+
+<!-- add tables with key outcome variables in each scenario
+
+
+
+
+
+
+
+
+<!-- Results?
+
+Complex contagion
+
+-->
+
+
+
+
 
 
 
