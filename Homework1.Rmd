@@ -1,0 +1,27 @@
+---
+title: "SFI Homework"
+author: "Ketika Garg and Madeleine Daepp"
+date: "6/17/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<!-- 
+
+
+
+Examples
++ fake news (facebook - trump inaugurationne)
++ conspiracy theories
++ polarization 
++ racism
+
+-->
+
+## contradictory accounts of an event flow across a group
+
+
+
