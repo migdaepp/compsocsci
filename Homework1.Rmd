@@ -25,7 +25,49 @@ echo chamber effect // complex contagion
 
 ## Introduction
 
-<!-- Conspiracy theories have been a part of human societies at least since [first great example], yet the frenzy around fake news feels like a decidedly 21st century phenomena. Has some societal reorganization changed the types of stories that get told or the rates at which such stories get spread? In this project, we suggest that a move from the diffusion of information along small-world networks -- as would have been common in the pre-internet era -- to its spread along scale-free facebook, twitter and other social media networks has fundamentally altered the way in which contradictory accounts spread. We show that, under a wide range of conditions, increasing skepticism e.g. through critical thinking skills or education, is inadequate to prevent polarization. We then suggest an array of scenarios beyond fake news, such as political polarization or racism, in which the spread of fake news can be compounded by ideological sorting.
+<!-- 
+
+To do list:
++ learn enough netlogo to build a network
++ try diffusing a few accounts
++ allow the network to reform when somebody is the only member with their viewpoint
++ look for a scenario where a single disgruntled person becomes central to a new component
+
+-->
+
+<!-- Conspiracy theories have been a part of human societies at least as long as the illuminati\footnote{Not a conspiracy theory at all. I see you, Kanye.}, yet the frenzy around fake news is considered a decidedly 21st century phenomena. Has some societal reorganization changed the types of stories that get told or the rates at which such stories get spread? In this project, we suggest that a move from the diffusion of information along small-world networks -- as would have been common in the pre-internet era -- to its spread along scale-free facebook, twitter and other social media networks has fundamentally altered the way in which contradictory accounts spread. We show that, under a wide range of conditions, increasing skepticism e.g. through critical thinking skills or education, is inadequate to prevent polarization\footnote{This framework assumes that some accounts of events are better than others (there is news, and then there is fake news) but we can also imagine scenarios in which truth is not so strightforward (the same news, different spin). It's reasonable to stick with the former, I think, because we are imagining our }. We then suggest an array of scenarios beyond fake news, such as political polarization or racism, in which the spread of fake news can be compounded by ideological sorting. We conclude with a hypothesized example of why cults form. 
+
++ Like, for example, the cult of Bernie. OMG. The choice of political candidates.
++ so suppose that you have a bunch of people who are fairly skeptical and a handful of people who are really not skeptical at all.
+-->
+
+<!-- [@Jackson2011] 
+"contagion of this form can be thought of as a basic, but important, form of social interaction, where the social structure largely determines patterns of diffusion
+
++ how densely connected does a society have to be in order to have an infection reach a nontrivial fraction of its members?
++ how does the spread depend on 
+        + the infectiousness of the disease? (or in this case believability of the account)
+        + the particulars of the social network
++ who is most likely to be infected?
++ how widespread is an infection likely to be?
+
+Kandel (1978): adolescents tended to drop friendships with people who were different from them and to add friendships to people who were similar
+
+Erdos and Renyi:
++ if p(n) / 1/n goes to infinity then the probability of having a giant component tends to 1 (that is, there's a threshold in the density of a random graph)
++ if p(n) > log(n)/n the network should be connected -- ever two nodes have a path between them. That is, there's a threshold for the network to be connected when the average degree is proprtional to log n
+
+in a random network, if average degree is low then the initial infection is likely to die out. if it's high, then it should spread to everyone
+
+Classical results
++ higher propensities of contagion in more highly connected individuals
++ opinion leaders as drivers of diffusion
++ an aggregate S-shape for many diffusion curves
+
+limitations
++ a lot of the theoretical literature uses simple random graphs with limited heterogeneity among nodes -- so they don't raeally think about how homophily might impact diffusion
++ Rogers 1995 points out that homophily might impact diffusion by allowing for increased local connectivity but decreased diffusion on a global scale
+
 -->
 
 ## Model Parameters
@@ -46,7 +88,16 @@ In the simplest variant of our model:
 > 4) $T$ = 25
 > 5) $p_{A1} = p_{A2} = \frac{1}{k}$ <!-- could try inequitable distributions -->
 
-<!-- we tested the sensitivity of our model to different paraneters $k = \{2, 3, 5, 10\}$ with both equal and unequal beginning distributions of the events -->
+<!-- we tested the sensitivity of our model to different paraneters $k = \{2, 3, 5, 10\}$ with both equal and unequal beginning distributions of the events where \sum^k P_{Am} = 1 -->
+
+<!-- 
+
+average number of individuals an infected person contacts
+percentage susceptible that become infected
+=> multiply these two together to get the percent of people infected by an affected person
+probability that an agent becomes immune
+
+-->
 
 #### Agent Properties
 
@@ -58,6 +109,10 @@ We endow each agent with two properties: skepticism and relevance. Skepticism is
 Relevance is a measure of how much the agent *cares* about the event. You can imagine a scenario where some communities care very strongly about an event, while others are relatively indifferent. An agent with high relevance will ask each of its neighbors for their accounts of the event in each period, while an agent with low relevance is less likely to ask about the event. Again, we draw relevance r from a uniform distribution $U[0,1]$. <!-- In a second variant, we consider the case in which relevance is a spatial property associated with colored patches in the model. -->
 
 #### Rules
+
+<!-- each node periodically contacts one (or more) nodes with whom to exchange information -->
+<!-- susceptible, infected, recovery: once you've believed something and you stop believeing it, you're immune -->
+<!-- if an agent contacts a bunch of agents and they're all infected, it loses its interest in spreading the rumor -->
 
 We consider two rules. 
 
@@ -80,20 +135,31 @@ The proportion of runs in which all agents held the same belief in the final per
 
 <!-- add tables with key outcome variables in each scenario
 
+<!-- when does the system converge? how many people know the rumor in equilibrium? -->
 
 
 
+## Extensions
 
-
-
++ opinion leaders <!-- but the cool thing about our model is that it shows that while we often construct networks where leaders disseminate opinions, we can also imagine scenarios in which the opposite occurs: the right opinion at the right time and in the right place can create a leader -->
++ we've described a situation where a contradictory opinion is false, but we could apply this model to the case of brand or product preferences <!-- (although, interestingly, if you prefer X that opinion is objectively false) --> where, after a few product launches, people have different opinions regarding the brand they prefer. The case of electoral candidates is another, similar, situation in which different interacting agents are choosing from a set of contradictory positions.
+<!-- homophily or social influence -->
 
 <!-- Results?
 
-Complex contagion
+Complex contagion:
+
+ooh, what if sorting means that a single disgruntled individual can amass a following? WOAH.
 
 -->
 
 
+
+<!-- Netlogo model
+
+1. 
+
+-->
 
 
 
