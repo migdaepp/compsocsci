@@ -2,12 +2,13 @@ globals
 [
   polarized ;; how many agents are polarized?
   infected-size ;;the size of the infected agents
+  k
 ]
 
 turtles-own
 [
   polarized? ;; true if agent has been infected
- ;; prob-infected
+ influence?
 ]
 
 
@@ -22,53 +23,93 @@ to spread
     [stop]
     if all? turtles [not polarized?]
     [stop]
+
+
    ask turtles [
-
-
-
     let all-links count link-neighbors
-    ;; infect neighbors
     ask link-neighbors
-      [
-        if ( random-float 1 <= 1 - skepticism and ((complex-contagion?) and (count link-neighbors with [polarized? = true] >= threshold) ))  ;;change mind
+      [ if (count link-neighbors with [polarized? = true]  > 0 )
         [
-          if not polarized?  ;; agents can be infected only once
-          [
+        if ( random-float 1 <= (1 - (skepticism)) and ((complex-contagion?) and (count link-neighbors with [polarized? = true] >= threshold) ))  ;;change mind
+        [
             set polarized? true
             set color red
             set size infected-size
             ask link-with myself [set color red]
-
-          ]
-
-
-        ]
-
-;  if ( random-float 1 <= 1 - skepticism and ((complex-contagion?) and (count link-neighbors with [polarized? = false] >= threshold) ))  ;;
-;        [
-;          if polarized?  ;; agents can be infected only once
-;          [
-;            ask link-with myself [set color gray + 1.5]
-;            reset-node
-;          ]
-;        ]
-      ]
-    ]
+        ] ] ] ]
 
 
   do-plotting
   set polarized count turtles with [polarized? = true]
-
   tick
+  echo
+  ;move
 
 end
 
 
-to move
-  ask turtle 0 [
-    if (any? turtles with [color = myself] )
+to echo
 
-    [create-link-with one-of turtles with [not link-neighbor? myself] [set color yellow] ]
+  if (count turtles with [polarized? = true] > 2) [
+  ask one-of turtles with [polarized? = true] [
+  ask link-neighbors
+      [ if (polarized? = false ) ;; whther connected to opposing opinion agents
+        [
+        if ( random-float 1 <= ( pro-echo) )
+            [ ask link-with myself [die]    ;;kill existing link
+          set k 1
+        ] ] ]
+  if (k = 1)
+    [create-link-with one-of other turtles with [polarized? = true] [set color yellow]
+    set k 0
+    ]
+
+  ]
+
+  if (count turtles with [polarized? = false] > 2) [
+  ask one-of turtles with [polarized? = false] [
+  ask link-neighbors
+      [ if (polarized? = true )
+        [
+        if ( random-float 1 <= ( pro-echo) )  ;;reconnect
+            [ ask link-with myself [die]
+          set k 1
+        ] ] ]
+  if (k = 1)
+    [create-link-with one-of other turtles with [polarized? = false ] [set color yellow]
+    set k 0
+    ]
+
+  ]
+  ] ]
+end
+
+
+to move
+
+
+
+    if (count turtles with [polarized? = true] > 1) and (random-float 1 <= rewiring-probability )
+ [
+    ask links [ die]
+    ask turtles with [polarized? = true] [
+      create-link-with one-of other turtles with [polarized? = true and not link-neighbor? myself] [set color yellow] ] ]
+
+    if (count turtles with [polarized? = true] > 1) and (random-float 1 <= 0.2 * rewiring-probability )
+ [
+    ask turtles with [polarized? = true] [
+      create-link-with one-of other turtles with [polarized? = false and not link-neighbor? myself] [set color blue] ]
+
+    if (count turtles with [polarized? = false] > 1) and (random-float 1 <= rewiring-probability )
+    [  ask links [die]
+    ask turtles with [polarized? = false] [
+      create-link-with one-of other turtles with [polarized? = false and not link-neighbor? myself] [set color yellow] ] ]
+  ]
+
+    if (count turtles with [polarized? = false] > 1) and (random-float 1 <= 0.2 * rewiring-probability )
+ [
+    ask turtles with [polarized? = false] [
+      create-link-with one-of other turtles with [polarized? = true and not link-neighbor? myself] [set color blue] ]
   ]
 end
 
@@ -90,7 +131,8 @@ to generate-topology
   set infected-size 4
   set-default-shape turtles "outlined circle"
 
-  create-turtles num-nodes [reset-node]
+  create-turtles (num-nodes) [reset-node]
+ ; create-turtles celebrities [reset-node2]
   create-lattice
   rewire-network
   infect-two
@@ -109,15 +151,13 @@ to infect-two
   repeat init [ask one-of turtles
   [
     set polarized? true
-    ;set prob-infected 1
     set color red
     set size infected-size
-    ask one-of link-neighbors [
-          set polarized? true
-         ;; set prob-infected 1
-          set color red
-          set size infected-size
-    ]
+;    ask one-of link-neighbors [
+;    set polarized? true
+;   set color red
+;   set size infected-size
+;    ]
   ] ]
   set polarized  count turtles with [color = red]
 end
@@ -127,9 +167,16 @@ to reset-node
     set color white
     set size 3
     set polarized? false
-    ;set prob-infected 0
+    set influence? false
 end
 
+to reset-node2
+    set color red
+    set size 5
+  set polarized? true
+  set shape "star"
+  set influence? true
+end
 
 ;; WARNING: the simplified rewiring algorithm does not certain checks (ie disconnected graph)
 ;; for large networksthis shouldn't be too much of an issue.
@@ -170,12 +217,12 @@ to create-lattice
     ;; Layout turtles:
   layout-circle (sort turtles) max-pxcor - 20
   ;; space out turtles to see clustering
- ;; ask turtles
- ;; [
-  ;;  facexy 0 0
-  ;;  if who mod 2 = 0 [fd 7]
- ;; ]
-  ;display
+  ask turtles
+  [
+    facexy 0 0
+    if who mod 2 = 0 [fd 7]
+  ]
+  display
 
 end
 
@@ -241,7 +288,7 @@ num-nodes
 num-nodes
 10
 500
-150.0
+180.0
 10
 1
 NIL
@@ -256,7 +303,7 @@ rewiring-probability
 rewiring-probability
 0
 1
-0.065
+0.042
 0.001
 1
 NIL
@@ -289,7 +336,7 @@ skepticism
 skepticism
 0
 1
-0.36
+0.37
 0.01
 1
 NIL
@@ -394,7 +441,7 @@ init
 init
 2
 20
-2.0
+6.0
 2
 1
 NIL
@@ -415,21 +462,6 @@ threshold
 NIL
 HORIZONTAL
 
-SLIDER
-938
-208
-1110
-241
-echo
-echo
-0
-1
-1.0
-0.1
-1
-NIL
-HORIZONTAL
-
 BUTTON
 1000
 324
@@ -446,6 +478,21 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+954
+193
+1126
+226
+pro-echo
+pro-echo
+0
+1
+0.758
+0.001
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -775,13 +822,31 @@ repeat 5 [rewire-one]
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="vary-rewiring-probability" repetitions="5" runMetricsEveryStep="false">
-    <go>generate-topology</go>
-    <timeLimit steps="1"/>
-    <exitCondition>rewiring-probability &gt; 1</exitCondition>
-    <metric>average-path-length</metric>
-    <metric>clustering-coefficient</metric>
-    <steppedValueSet variable="rewiring-probability" first="0" step="0.01" last="1"/>
+  <experiment name="vary-rewiring-probability" repetitions="10" runMetricsEveryStep="false">
+    <setup>generate-topology</setup>
+    <go>spread</go>
+    <timeLimit steps="40"/>
+    <metric>polarized</metric>
+    <steppedValueSet variable="rewiring-probability" first="0.01" step="0.1" last="0.9"/>
+    <enumeratedValueSet variable="skepticism">
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="echo">
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="threshold">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="init">
+      <value value="2"/>
+      <value value="4"/>
+    </enumeratedValueSet>
   </experiment>
   <experiment name="time-to-spread-simple" repetitions="30" runMetricsEveryStep="false">
     <setup>generate-topology
