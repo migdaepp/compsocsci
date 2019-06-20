@@ -1,7 +1,9 @@
 globals
 [
   polarizedn ;; how many agents are polarized?
+  AvgDegree ;;
   infected-size ;;the size of the infected agents
+  k
 ]
 
 turtles-own
@@ -18,37 +20,43 @@ turtles-own
 to generate-topology
   clear-all
   set infected-size 3
+  set AvgDegree 0
   set-default-shape turtles "outlined circle"
-  create-turtles num-nodes [reset-node]
+  create-turtles num-nodes [reset-node]         ;; create n nodes and make them small and white
   ;; distribute starting conditions
 
   build-network                                 ;; select network type and build it
   infect-two                                    ;; infect num-nodes nodes and one neighbor for each
   repeat 100 [ layout ]
   reset-ticks                                   ;; reset tick marks
+  set AvgDegree AvgDegree / num-nodes
+
 end
 
 ;; connects the two nodes
 to make-link-between [node1 node2]
   ask node1 [
     create-link-with node2
-      [ set color gray + 1.5]                   ;; is this necessary?
+      [ set color gray + 1.5]
   ]
 end
 
+;; initial infection
 to infect-two
     ask turtles
-    [reset-node]                                ;; clears colors and polarization
+    [reset-node                                        ;; clear colors
+     set AvgDegree AvgDegree + count link-neighbors]   ;; track number of neighbors
     ask links
     [set color gray + 1.5]
 
-  ;; infect a single agent
+  ;; infect i agents
   repeat init [ask one-of turtles
   [
     set polarized? true
     ;set prob-infected 1
     set color red
     set size infected-size
+    ;; and then infect one of their friends
     ask one-of link-neighbors [
           set polarized? true
          ;; set prob-infected 1
@@ -57,8 +65,10 @@ to infect-two
     ]
   ] ]
   set polarizedn count turtles with [color = red]
+
 end
 
+;; disinfection procedure
 to reset-node
     set color white
     set size 2
@@ -68,6 +78,7 @@ to reset-node
     fd max-pxcor
 end
 
+;; construct the network
 to build-network
   (ifelse
     network-sw = "Small World" [
@@ -189,10 +200,10 @@ end
 
 to spread
   ;; or if every agent has already been infected
-  if all? turtles [polarized?]
-    [stop]
-    if all? turtles [not polarized?]
-    [stop]
+  ;if all? turtles [polarized?]
+  ;  [stop]
+  ;  if all? turtles [not polarized?]
+  ;  [stop]
 
   ask turtles [
     ifelse UseThresholds?
@@ -204,13 +215,18 @@ to spread
 
 
   ]
+
   tick
+  echo
+  set-colors
 
 end
 
 to threshold-spread
+  let neighbors-sum count link-neighbors
+  if (neighbors-sum = 0) [set neighbors-sum 1]
   let polarization-one-sum count link-neighbors with [polarized?]
-  (ifelse polarization-one-sum >= threshold and random-float 1 <= (1 - skepticism)
+  (ifelse polarization-one-sum / neighbors-sum >= threshold and random-float 1 <= (1 - skepticism)
   [
     set polarized? true
     set color red
@@ -225,10 +241,11 @@ to threshold-spread
   ]
   ; elsecommands
   ; allow reversion
-  [ set polarized? false
-    set color white
-    set size 2
-  ])
+  ;[ set polarized? false
+  ;  set color white
+  ;  set size 2
+  ;]
+  )
 
 end
 
@@ -240,6 +257,59 @@ to individual-spread
   [set color white
     set size 2]
 end
+
+
+;; echo chamber effect
+to echo
+
+  if (count turtles with [polarized? = true] > 2) [             ;; if at least two turtles are polarized
+  ask one-of turtles with [polarized? = true] [
+  ask link-neighbors
+      [ if (polarized? = false )                                 ;; with p >= echo, kill existing link and replace with a link to a polarized agent
+        [
+        if ( random-float 1 <= ( pro-echo) )
+            [ ask link-with myself [die]
+          set k 1
+        ] ] ]
+  if (k = 1)
+    [create-link-with one-of other turtles with [polarized? = true] [set color yellow]
+    set k 0
+    ]
+
+  ]
+
+  if (count turtles with [polarized? = false] > 2) [             ;; if at least two turtles are not polarized
+  ask one-of turtles with [polarized? = false] [
+  ask link-neighbors
+      [ if (polarized? = true )
+        [
+        if ( random-float 1 <= ( pro-echo) )                     ;; with p = echo, kill existing link and replace with a link to a polarized agent
+            [ ask link-with myself [die]
+          set k 1
+        ] ] ]
+  if (k = 1)
+    [create-link-with one-of other turtles with [polarized? = false ] [set color yellow]
+    set k 0
+    ]
+
+  ]
+  ] ]
+end
+
+to set-colors
+  ask links [
+    let check-set both-ends
+    (ifelse (all? check-set [polarized? = true])[
+     set color red
+    ]
+    (all? check-set [polarized? = false])[
+      set color white
+    ] [
+      set color yellow
+    ])
+  ]
+end
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Reporting ;;;
@@ -264,7 +334,6 @@ to do-layout
   repeat 5 [layout-spring turtles links 0.2 4 0.9]
   display
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 295
@@ -317,7 +386,7 @@ rewiring-probability
 rewiring-probability
 0
 1
-0.398
+0.91
 0.001
 1
 NIL
@@ -350,7 +419,7 @@ skepticism
 skepticism
 0
 1
-0.4
+0.9
 0.01
 1
 NIL
@@ -436,10 +505,10 @@ NIL
 1
 
 SLIDER
-1017
-60
-1189
-93
+884
+12
+1056
+45
 init
 init
 2
@@ -451,51 +520,34 @@ NIL
 HORIZONTAL
 
 SLIDER
-891
-123
-1063
-156
+886
+51
+1058
+84
 threshold
 threshold
+0
 1
-10
-3.0
-1
+0.9
+0.1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-938
-208
-1110
-241
-echo
-echo
+886
+89
+1058
+122
+pro-echo
+pro-echo
 0
 1
-0.1
+0.9
 0.1
 1
 NIL
 HORIZONTAL
-
-BUTTON
-1000
-324
-1063
-357
-NIL
-move
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
 
 CHOOSER
 8
@@ -517,6 +569,17 @@ UseThresholds?
 0
 1
 -1000
+
+MONITOR
+192
+163
+303
+208
+Avg Degree
+AvgDegree
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -903,15 +966,15 @@ infect-two</setup>
       <value value="true"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="MidnightRuns" repetitions="20" sequentialRunOrder="false" runMetricsEveryStep="false">
+  <experiment name="MidnightRuns" repetitions="20" runMetricsEveryStep="true">
     <setup>generate-topology</setup>
     <go>spread</go>
     <timeLimit steps="40"/>
     <metric>count turtles</metric>
     <metric>polarizedn</metric>
+    <metric>AvgDegree</metric>
     <enumeratedValueSet variable="UseThresholds?">
       <value value="true"/>
-      <value value="false"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="network-sw">
       <value value="&quot;Small World&quot;"/>
@@ -929,7 +992,9 @@ infect-two</setup>
     <enumeratedValueSet variable="skepticism">
       <value value="0"/>
       <value value="0.1"/>
+      <value value="0.25"/>
       <value value="0.5"/>
+      <value value="0.75"/>
       <value value="0.9"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="num-nodes">
@@ -943,9 +1008,16 @@ infect-two</setup>
       <value value="20"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="threshold">
-      <value value="1"/>
-      <value value="2"/>
-      <value value="3"/>
+      <value value="0"/>
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pro-echo">
+      <value value="0"/>
+      <value value="0.1"/>
+      <value value="0.5"/>
+      <value value="0.9"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
